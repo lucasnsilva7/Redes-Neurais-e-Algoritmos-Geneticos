@@ -1,0 +1,278 @@
+import random
+import math
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+
+#################################################
+#                   Classe Valor                #
+#################################################
+
+class Valor:
+    def __init__(self, data, progenitor=(), operador_mae="", rotulo=""):
+        self.data = data
+        self.progenitor = progenitor
+        self.operador_mae = operador_mae
+        self.rotulo = rotulo
+        self.grad = 0
+
+    def __repr__(self):
+        return f"Valor(data={self.data})"
+    
+    def __add__(self, outro_valor):
+        """Realiza a operação: self + outro_valor."""
+        
+        if not isinstance(outro_valor, Valor):
+            outro_valor = Valor(outro_valor)
+            
+        progenitor = (self, outro_valor)
+        data = self.data + outro_valor.data
+        operador_mae = "+"
+        resultado = Valor(data, progenitor, operador_mae)
+        
+        def propagar_adicao():
+            self.grad += resultado.grad
+            outro_valor.grad += resultado.grad
+            
+        resultado.propagar = propagar_adicao
+        
+        return resultado
+    
+    def __mul__(self, outro_valor):
+        """Realiza a operação: self * outro_valor."""
+        
+        if not isinstance(outro_valor, Valor):
+            outro_valor = Valor(outro_valor)
+            
+        progenitor = (self, outro_valor)
+        data = self.data * outro_valor.data
+        operador_mae = "*"
+        resultado = Valor(data, progenitor, operador_mae)
+        
+        def propagar_multiplicacao():
+            self.grad += resultado.grad * outro_valor.data 
+            outro_valor.grad += resultado.grad * self.data
+            
+        resultado.propagar = propagar_multiplicacao
+        
+        return resultado
+    
+    def exp(self):
+        """Realiza a operação: exp(self)"""
+        progenitor = (self, )
+        data = math.exp(self.data)
+        operador_mae = "exp"
+        resultado = Valor(data, progenitor, operador_mae)
+        
+        def propagar_exp():
+            self.grad += resultado.grad * data 
+        
+        resultado.propagar = propagar_exp
+        
+        return resultado
+    
+    def __pow__(self, expoente):
+        """Realiza a operação: self ** expoente"""
+        assert isinstance(expoente, (int, float))
+        progenitor = (self, )
+        data = self.data ** expoente
+        operador_mae = f"**{expoente}"
+        resultado = Valor(data, progenitor, operador_mae)
+        
+        def propagar_pow():
+            self.grad += resultado.grad * (expoente * self.data ** (expoente - 1))
+        
+        resultado.propagar = propagar_pow
+        
+        return resultado
+    
+    def __truediv__(self, outro_valor):
+        """Realiza a operação: self / outro_valor"""
+        return self * outro_valor ** (-1)
+    
+    def __neg__(self):
+        """Realiza a operação: -self"""
+        return self * -1
+    
+    def __sub__(self, outro_valor):
+        """Realiza a operação: self - outro_valor"""
+        return self + (-outro_valor)
+    
+    def __radd__(self, outro_valor):
+        """Realiza a operação: outro_valor + self"""
+        return self + outro_valor
+    
+    def __rmul__(self, outro_valor):
+        """Realiza a operação: outro_valor * self"""
+        return self * outro_valor
+    
+    def sig(self):
+        """Realiza a operação: exp(self) / (exp(self) + 1)"""
+        return self.exp() / (self.exp() + 1)
+    
+    def propagar(self):
+        pass
+    
+    def propagar_tudo(self):
+        
+        self.grad = 1
+        
+        ordem_topologica = []
+        
+        visitados = set()
+
+        def constroi_ordem_topologica(v):
+            if v not in visitados:
+                visitados.add(v)
+                for progenitor in v.progenitor:
+                    constroi_ordem_topologica(progenitor)
+                ordem_topologica.append(v)
+
+        constroi_ordem_topologica(self)
+        
+        for vertice in reversed(ordem_topologica):
+            vertice.propagar()
+            
+############## Fera 4.1 ##############
+
+    def log(self): 
+        """Realiza a operação: log(self)"""
+        eps = 1e-15
+        x = max(self.data, eps)
+        resultado = Valor(math.log(x), (self,), "log")
+        
+        def propagar_log():
+            self.grad += (1.0 / x) * resultado.grad
+            
+        resultado.propagar = propagar_log
+        
+        return resultado
+    
+    def relu(self): 
+        """Aplica a função ReLU"""
+        resultado = Valor(self.data if self.data > 0 else 0.0, (self,), "relu")
+        def propagar_relu():
+            self.grad += (1.0 if resultado.data > 0 else 0.0) * resultado.grad
+        resultado.propagar = propagar_relu
+        return resultado
+
+####################################################
+#                   Classe Neurônio                #
+####################################################
+
+class Neuronio:
+    def __init__(self, num_dados_entrada):
+        self.vies = Valor(random.uniform(-1, 1))
+        
+        self.pesos = []
+        for i in range(num_dados_entrada):
+            self.pesos.append(Valor(random.uniform(-1, 1)))
+
+    def __call__(self, x):
+        
+        assert len(x) == len(self.pesos)
+        
+        soma = 0
+        for info_entrada, peso_interno in zip(x, self.pesos):
+            soma += info_entrada * peso_interno
+            
+        soma += self.vies  
+        dado_de_saida = soma.sig()
+        
+        return dado_de_saida       
+    
+    def parametros(self):
+        return self.pesos + [self.vies]
+
+##################################################
+#                   Classe Camada                #
+##################################################
+
+class Camada:
+    def __init__(self, num_neuronios, num_dados_entrada, taxa_dropout): # taxa_dropout 4.3
+        neuronios = []
+        
+        for _ in range(num_neuronios):
+            neuronio = Neuronio(num_dados_entrada)
+            neuronios.append(neuronio)
+            
+        self.neuronios = neuronios   
+        self.taxa_dropout = taxa_dropout  
+        
+    def __call__(self, x, treino = True):
+        dados_de_saida = []
+        
+        for neuronio in self.neuronios:
+            informacao = neuronio(x)
+            dados_de_saida.append(informacao)
+        
+        if treino: # taxa_dropout 4.3
+            n_1 = int(len(self.neuronios) * self.taxa_dropout)
+            n_0 = len(self.neuronios) - n_1
+            mascara = [1] * n_0 + [0] * n_1
+            random.shuffle(mascara)
+
+            novos_dados_saida = []       
+            for dado, masc in zip(dados_de_saida, mascara): # ajustando os neurônios que sobraram 
+                novos_dados_saida.append((dado * masc)/(1 - self.taxa_dropout))    
+            dados_de_saida = novos_dados_saida
+            
+        if len(dados_de_saida) == 1:
+            return dados_de_saida[0]
+        else:
+             return dados_de_saida
+            
+    
+    def parametros(self):
+        params = []
+        
+        for neuronio in self.neuronios:
+            params_neuronio = neuronio.parametros()
+            params.extend(params_neuronio)
+        
+        return params
+
+###############################################
+#                   Classe MLP                #
+###############################################
+
+class MLP:
+    def __init__(self, num_dados_entrada, num_neuronios_por_camada, taxa_dropout):
+        
+        percurso = [num_dados_entrada] + num_neuronios_por_camada
+        
+        camadas = []
+        
+        for i in range(len(num_neuronios_por_camada)):
+            camada = Camada(num_neuronios_por_camada[i], percurso[i], taxa_dropout)
+            camadas.append(camada)
+            
+        self.camadas = camadas
+        
+    def __call__(self, x, treino):
+        for camada in self.camadas:
+            x = camada(x, treino)
+        return x
+    
+    def parametros(self):
+        params = []
+        
+        for camada in self.camadas:
+            parametros_camada = camada.parametros()
+            params.extend(parametros_camada)
+            
+        return params
+
+########################################################
+#              Função cross_entropy Fera 4.1           #
+########################################################
+
+def cross_entropy(saidas_reais, saidas_preditas): 
+    N = len(saidas_reais)
+    soma = Valor(0.0)
+    for y_true, y_pred in zip(saidas_reais, saidas_preditas):
+        t1 = Valor(y_true) * y_pred.log()
+        t2 = (Valor(1.0) - Valor(y_true)) * (Valor(1.0) - y_pred).log()
+        soma = soma + (t1 + t2)
+    return soma * Valor(-1.0 / N)
