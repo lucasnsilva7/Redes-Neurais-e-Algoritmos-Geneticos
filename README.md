@@ -5,9 +5,13 @@ Este repositório tem o intuito de guardar todas as atividades realizadas na dis
 ## 📌 Estrutura do repositório
 
 📁 [Monstrinhos](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/tree/main/Monstrinhos)
+
 📁 [Feras formidáveis](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/tree/main/Feras_formid%C3%A1veis)
+
 📝 [Guia do aventureiro de Lumi](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Guia%20do%20Aventureiro%20de%20Lumi.pdf)
+
 📝 [README.md](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/README.md)
+
 📝 [Referências](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Refer%C3%AAncias)
 
 Cada uma das pastas armazena cada uma das feras e monstrinhos feitos. Dentro da pasta referente a cada monstrinho ou fera há os datasets, imagens e áudios utilizados. 
