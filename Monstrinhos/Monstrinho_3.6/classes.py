@@ -1,13 +1,5 @@
-import random
 import math
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
-
-#################################################
-#                   Classe Valor                #
-#################################################
+import random
 
 class Valor:
     def __init__(self, data, progenitor=(), operador_mae="", rotulo=""):
@@ -51,7 +43,7 @@ class Valor:
         resultado = Valor(data, progenitor, operador_mae)
         
         def propagar_multiplicacao():
-            self.grad += resultado.grad * outro_valor.data 
+            self.grad += resultado.grad * outro_valor.data # grad_filho * derivada filho em relação a mãe
             outro_valor.grad += resultado.grad * self.data
             
         resultado.propagar = propagar_multiplicacao
@@ -133,33 +125,6 @@ class Valor:
         
         for vertice in reversed(ordem_topologica):
             vertice.propagar()
-            
-############## Fera 4.1 ##############
-
-    def log(self): 
-        """Realiza a operação: log(self)"""
-        eps = 1e-15
-        x = max(self.data, eps)
-        resultado = Valor(math.log(x), (self,), "log")
-        
-        def propagar_log():
-            self.grad += (1.0 / x) * resultado.grad
-            
-        resultado.propagar = propagar_log
-        
-        return resultado
-    
-    def relu(self): 
-        """Aplica a função ReLU"""
-        resultado = Valor(self.data if self.data > 0 else 0.0, (self,), "relu")
-        def propagar_relu():
-            self.grad += (1.0 if resultado.data > 0 else 0.0) * resultado.grad
-        resultado.propagar = propagar_relu
-        return resultado
-
-####################################################
-#                   Classe Neurônio                #
-####################################################
 
 class Neuronio:
     def __init__(self, num_dados_entrada):
@@ -168,7 +133,7 @@ class Neuronio:
         self.pesos = []
         for i in range(num_dados_entrada):
             self.pesos.append(Valor(random.uniform(-1, 1)))
-
+            
     def __call__(self, x):
         
         assert len(x) == len(self.pesos)
@@ -184,45 +149,28 @@ class Neuronio:
     
     def parametros(self):
         return self.pesos + [self.vies]
-
-##################################################
-#                   Classe Camada                #
-##################################################
-
+    
 class Camada:
-    def __init__(self, num_neuronios, num_dados_entrada, taxa_dropout): # taxa_dropout 4.3
+    def __init__(self, num_neuronios, num_dados_entrada):
         neuronios = []
         
         for _ in range(num_neuronios):
             neuronio = Neuronio(num_dados_entrada)
             neuronios.append(neuronio)
             
-        self.neuronios = neuronios   
-        self.taxa_dropout = taxa_dropout  
+        self.neuronios = neuronios     
         
-    def __call__(self, x, treino = True):
+    def __call__(self, x):
         dados_de_saida = []
         
         for neuronio in self.neuronios:
             informacao = neuronio(x)
             dados_de_saida.append(informacao)
-        
-        if treino: # taxa_dropout 4.3
-            n_0 = int(len(self.neuronios) * self.taxa_dropout)
-            n_1 = len(self.neuronios) - n_0
-            mascara = n_1 * [1] + n_0 * [0] 
-            random.shuffle(mascara)
-
-            novos_dados_saida = []       
-            for dado, masc in zip(dados_de_saida, mascara): # ajustando os neurônios que sobraram 
-                novos_dados_saida.append((dado * masc)/(1 - self.taxa_dropout))    
-            dados_de_saida = novos_dados_saida
             
         if len(dados_de_saida) == 1:
             return dados_de_saida[0]
-        else:
-             return dados_de_saida
-            
+        else:        
+            return dados_de_saida  
     
     def parametros(self):
         params = []
@@ -232,27 +180,23 @@ class Camada:
             params.extend(params_neuronio)
         
         return params
-
-###############################################
-#                   Classe MLP                #
-###############################################
-
+    
 class MLP:
-    def __init__(self, num_dados_entrada, num_neuronios_por_camada, taxa_dropout):
+    def __init__(self, num_dados_entrada, num_neuronios_por_camada):
         
         percurso = [num_dados_entrada] + num_neuronios_por_camada
         
         camadas = []
         
         for i in range(len(num_neuronios_por_camada)):
-            camada = Camada(num_neuronios_por_camada[i], percurso[i], taxa_dropout)
+            camada = Camada(num_neuronios_por_camada[i], percurso[i])
             camadas.append(camada)
             
         self.camadas = camadas
         
-    def __call__(self, x, treino):
+    def __call__(self, x):
         for camada in self.camadas:
-            x = camada(x, treino)
+            x = camada(x)
         return x
     
     def parametros(self):
@@ -263,16 +207,3 @@ class MLP:
             params.extend(parametros_camada)
             
         return params
-
-########################################################
-#              Função cross_entropy Fera 4.1           #
-########################################################
-
-def cross_entropy(saidas_reais, saidas_preditas): 
-    N = len(saidas_reais)
-    soma = Valor(0.0)
-    for y_true, y_pred in zip(saidas_reais, saidas_preditas):
-        t1 = Valor(y_true) * y_pred.log()
-        t2 = (Valor(1.0) - Valor(y_true)) * (Valor(1.0) - y_pred).log()
-        soma = soma + (t1 + t2)
-    return soma * Valor(-1.0 / N)
