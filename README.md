@@ -12,7 +12,7 @@ Este repositório tem o intuito de guardar todas as atividades realizadas na dis
 
 📝 [README.md](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/README.md)
 
-📝 [Referências](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Refer%C3%AAncias)
+📝 [Referências](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/edit/main/Refer%C3%AAncias.md)
 
 Cada uma das pastas armazena cada uma das feras e monstrinhos feitos. Dentro da pasta referente a cada monstrinho ou fera há os datasets, imagens e áudios utilizados. 
 O **Guia do aventureiro de Lumi** foi feito pelo professor Dr Daniel Roberto Cassar e contém informações sobre como deveria ser feita cada uma das atividades.
