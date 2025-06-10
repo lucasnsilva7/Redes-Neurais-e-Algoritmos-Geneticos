@@ -24,4 +24,6 @@ O **Guia do aventureiro de Lumi** foi feito pelo professor Dr Daniel Roberto Cas
 - [Python]
 - [Jupyter notebook]
 - [VS Code]
+- [LaTeX]
+- [Overleaf]
 - [Bibliotecas: PyGame, SkLearn, NumPy, Matplotlib, Math, Random, Pandas, PyTorch, Time, Seaborn, String, Functools]
