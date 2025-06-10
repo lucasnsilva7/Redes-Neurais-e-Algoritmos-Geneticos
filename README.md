@@ -10,6 +10,8 @@ Este repositório tem o intuito de guardar todas as atividades realizadas na dis
 
 📝 [Guia do aventureiro de Lumi](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Guia%20do%20Aventureiro%20de%20Lumi.pdf)
 
+📝 [Memorial da disciplina de Redes Neurais e Algoritmos Genéticos](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Memorial_da_disciplina_de_Redes_Neurais_e_Algoritmos_Gen%C3%A9ticos.pdf)
+
 📝 [README.md](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/README.md)
 
 📝 [Referências](https://github.com/lucasnsilva7/Redes-Neurais-e-Algoritmos-Geneticos/blob/main/Refer%C3%AAncias.md)
