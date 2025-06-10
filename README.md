@@ -1,4 +1,4 @@
-# 📚 Memorial do curso de Redes Neurais e Algoritmos Genéticos
+# 📚 Atividades do curso de Redes Neurais e Algoritmos Genéticos
 
 Este repositório tem o intuito de guardar todas as atividades realizadas na disciplina de **Redes Neurais e Algoritmos Genéticos** lecionada pelo professor [Dr Daniel Roberto Cassar](https://github.com/drcassar) no primeiro semestre de 2025 e no terceiro semestre do **bacharelado em ciência e tecnologia** da **Ilum - Escola de Ciência**.
 
